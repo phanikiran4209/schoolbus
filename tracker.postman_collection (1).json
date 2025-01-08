@@ -1,0 +1,165 @@
+{
+	"info": {
+		"_postman_id": "82d0c09f-fdda-42c3-8484-45fda51b1768",
+		"name": "tracker",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Parent Register",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiU1VQRVJBRE1JTiIsInVzZXJJZCI6Miwic3ViIjoic2Nob29sX2FkbWluIiwiaWF0IjoxNzM2MjY5NjgwLCJleHAiOjE3MzYzNTYwODB9.mV285IUhhdQ0WoZ5nbNidC9yZ41G4uqPv5mBnGhhAjM",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\":\"ashok\",\r\n    \"password\":\"password\",\r\n    \"email\":\"test@test.com\",\r\n    \"phone\":\"9873583606\",\r\n    \"firstName\":\"Ashok\",\r\n    \"lastName\":\"Kulhari\",\r\n    \"countryCode\":\"IN\",\r\n    \"schoolId\":\"AABCD\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://68.178.203.99:7080/api/v1/parent/register",
+					"protocol": "http",
+					"host": [
+						"68",
+						"178",
+						"203",
+						"99"
+					],
+					"port": "7080",
+					"path": [
+						"api",
+						"v1",
+						"parent",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SchoolAdminSignin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userName\":\"school_admin\",\r\n    \"password\":\"Admin@123\"\r\n   \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/auth/signin",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "verifyOTP",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "",
+						"type": "default"
+					},
+					{
+						"key": "Client-Type",
+						"value": "",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\":\"school_admin\",\r\n    \"otp\":\"Admin@123\"\r\n   \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://68.178.203.99:7080/api/v1/otp/verify",
+					"protocol": "http",
+					"host": [
+						"68",
+						"178",
+						"203",
+						"99"
+					],
+					"port": "7080",
+					"path": [
+						"api",
+						"v1",
+						"otp",
+						"verify"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ParentSignIn",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Client-Type",
+						"value": "web",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userName\":\"ashok\",\r\n    \"password\":\"password\"\r\n   \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://68.178.203.99:7080/api/v1/auth/signin",
+					"protocol": "http",
+					"host": [
+						"68",
+						"178",
+						"203",
+						"99"
+					],
+					"port": "7080",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"signin"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

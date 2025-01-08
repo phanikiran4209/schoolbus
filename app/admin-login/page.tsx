@@ -1,7 +1,7 @@
 import { AdminLoginBox } from "@/components/admin-login-box"
 import { NavigationBar } from "@/components/navigation-bar"
 
-export default function AdminLogin() {
+export default function AdminLogin() {  
   return (
     <main 
       className="min-h-screen bg-cover bg-center bg-no-repeat relative"

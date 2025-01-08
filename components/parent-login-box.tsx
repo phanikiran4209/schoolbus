@@ -17,10 +17,33 @@ import {
 export function ParentLoginBox() {
   const router = useRouter()
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [data, setData] = React.useState({ username: '', password: '' });
+
+  const signinHandler = async () => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}/auth/signin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Client-Type': 'web',
+      },
+      body: JSON.stringify(data),
+    });
+  
+    if (!response.ok) {
+      throw new Error('Parent sign-in failed');
+    }
+  
+    return response.json();
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Add your authentication logic here
-    router.push('/student-selection')
+    try {
+      await signinHandler();
+      router.push('/student-selection');
+    } catch {
+      alert('Login failed');
+    }
   }
 
   return (
@@ -39,15 +62,18 @@ export function ParentLoginBox() {
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="username" className="text-sm font-medium text-gray-300">
-                Username:
+                Username
               </label>
               <Input 
                 id="username" 
                 type="text" 
                 required 
                 placeholder="Enter your Username"
+                value={data.username}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, username: e.target.value })}
                 className="w-full bg-gray-700/90 border-gray-600 text-white focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300"
               />
+             
             </div>
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium text-gray-300">
@@ -56,20 +82,22 @@ export function ParentLoginBox() {
               <Input 
                 id="password" 
                 type="password" 
+                value={data.password}
                 required 
                 placeholder="Enter your Password"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, password: e.target.value })}
                 className="w-full bg-gray-700/90 border-gray-600 text-white focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300"
               />
             </div>
             <div className="text-right">
               <Link href="/forgot-password" className="text-sm text-yellow-400 hover:underline">
-                Forgot password?
               </Link>
             </div>
           </CardContent>
           <CardFooter>
             <Button 
               type="submit"
+              onSubmit={signinHandler}
               className="w-full bg-yellow-400 text-black hover:bg-yellow-500 transition-all duration-300 transform hover:scale-105"
             >
               Login
