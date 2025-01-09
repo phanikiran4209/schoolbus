@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import * as React from "react"
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
@@ -9,46 +9,103 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function SchoolLoginBox() {
   const router = useRouter()
-  const [showOTP, setShowOTP] = useState(false)
-  const [otp, setOTP] = useState(['', '', '', '', '', ''])
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [showOTP, setShowOTP] = React.useState(false)
+  const [otp, setOTP] = React.useState(['', '', '', '', '', ''])
+  const [data, setData] = React.useState({ username: '', password: '' })
+  const [showForgotPasswordAlert, setShowForgotPasswordAlert] = React.useState(false)
+  const [token, setToken] = React.useState('')
+  const [username, setUsername] = React.useState('')
 
-  const handleLogin = (e: React.FormEvent) => {
+  const signinHandler = async () => {
+    const response = await fetch("http://68.178.203.99:7080/api/v1/auth/signin", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Client-Type': 'web',
+      },
+      body: JSON.stringify({ 
+        userName: data.username, 
+        password: data.password 
+      }),
+    })
+    
+    if (!response.ok) {
+      throw new Error('School sign-in failed')
+    }
+
+    const result = await response.json()
+    console.log(result)
+
+    if (result.twoFactorAuthentication) {
+      setShowOTP(true)
+      setToken(result.token)
+      setUsername(result.username)
+    } else {
+      router.push('/registration-forms')
+    }
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setShowOTP(true)
+    try {
+      await signinHandler()
+    } catch {
+      alert('Username or password not found')
+    }
   }
 
   const handleOTPChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return // Only allow digits
+    if (!/^\d*$/.test(value)) return
 
     const newOTP = [...otp]
     newOTP[index] = value
     setOTP(newOTP)
 
-    // Move to next input if value is entered
     if (value && index < 5) {
       const nextInput = document.getElementById(`otp-${index + 1}`) as HTMLInputElement
       if (nextInput) nextInput.focus()
     }
   }
 
-  const handleVerifyOTP = () => {
-    // Add OTP verification logic here
-    console.log('Verifying OTP:', otp.join(''))
-    router.push('/registration-forms')
+  const handleVerifyOTP = async () => {
+    try {
+      const response = await fetch("http://68.178.203.99:7080/api/v1/otp/verify", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Client-Type': 'web',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          username: username,
+          otp: otp.join(''),
+        }),
+      })
+      if (!response.ok) {
+        throw new Error('OTP verification failed')
+      }
+      router.push('/registration-forms')
+    } catch {
+      alert('Invalid OTP')
+    }
   }
 
   const handleResendOTP = () => {
-    // Add OTP resend logic here
     console.log('Resending OTP')
+  }
+
+  const handleForgotPassword = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    setShowForgotPasswordAlert(true)
+    setTimeout(() => setShowForgotPasswordAlert(false), 5000)
   }
 
   return (
@@ -73,10 +130,10 @@ export function SchoolLoginBox() {
                 <Input 
                   id="username" 
                   type="text" 
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
                   required 
-                  placeholder="Enter your name" 
+                  placeholder="Enter your Username"
+                  value={data.username}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, username: e.target.value })}
                   className="w-full bg-gray-700/90 border-gray-600 text-white focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300"
                 />
               </div>
@@ -87,15 +144,15 @@ export function SchoolLoginBox() {
                 <Input 
                   id="password" 
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   required 
-                  placeholder="Enter your Password" 
-                  className="w-full bg-gray-700/90 border-gray-600 text-white focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300 placeholder-transparent"
+                  placeholder="Enter your Password"
+                  value={data.password}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, password: e.target.value })}
+                  className="w-full bg-gray-700/90 border-gray-600 text-white focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300"
                 />
               </div>
               <div className="text-right">
-                <Link href="/forgot-password" className="text-sm text-yellow-400 hover:underline">
+                <Link href="#" onClick={handleForgotPassword} className="text-sm text-yellow-400 hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -146,6 +203,13 @@ export function SchoolLoginBox() {
               </Button>
             </CardFooter>
           </form>
+        )}
+        {showForgotPasswordAlert && (
+          <Alert className="mt-4 bg-blue-100 border-blue-500 text-blue-900">
+            <AlertDescription>
+              Please consult the school admin for password recovery assistance.
+            </AlertDescription>
+          </Alert>
         )}
       </Card>
     </div>

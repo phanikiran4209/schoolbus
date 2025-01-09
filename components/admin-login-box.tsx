@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import * as React from "react"
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
@@ -17,16 +17,50 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function AdminLoginBox() {
   const router = useRouter()
-  const [showOTP, setShowOTP] = useState(false)
-  const [otp, setOTP] = useState(['', '', '', '', '', ''])
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [showForgotPasswordAlert, setShowForgotPasswordAlert] = useState(false)
+  const [showOTP, setShowOTP] = React.useState(false)
+  const [otp, setOTP] = React.useState(['', '', '', '', '', ''])
+  const [data, setData] = React.useState({ userName: '', password: '' });
+  const [showForgotPasswordAlert, setShowForgotPasswordAlert] = React.useState(false)
+  const [token, setToken] = React.useState('')
+  const [username, setUsername] = React.useState('')
 
-  const handleLogin = (e: React.FormEvent) => {
+  const signinHandler = async () => {
+    const response = await fetch("http://68.178.203.99:7080/api/v1/auth/signin", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Client-Type': 'web',
+      },
+      body: JSON.stringify({ 
+        userName: data.userName, 
+        password: data.password 
+      }),
+    })
+    
+    if (!response.ok) {
+      throw new Error('Admin sign-in failed')
+    }
+
+    const result = await response.json()
+    console.log(result)
+
+    // Check if two-factor authentication is enabled
+    if (result.twoFactorAuthentication) {
+      setShowOTP(true)
+      setToken(result.token)
+      setUsername(result.username)
+    } else {
+      router.push('/admin-selection')
+    }
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Add your authentication logic here
-    setShowOTP(true)
+    try {
+      await signinHandler()
+    } catch {
+      alert('Email or password not found')
+    }
   }
 
   const handleOTPChange = (index: number, value: string) => {
@@ -43,14 +77,30 @@ export function AdminLoginBox() {
     }
   }
 
-  const handleVerifyOTP = () => {
-    // Add OTP verification logic here
-    console.log('Verifying OTP:', otp.join(''))
-    router.push('/admin-selection')
+  const handleVerifyOTP = async () => {
+    try {
+      const response = await fetch("http://68.178.203.99:7080/api/v1/otp/verify", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Client-Type': 'web',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          username: username,
+          otp: otp.join(''),
+        }),
+      })
+      if (!response.ok) {
+        throw new Error('OTP verification failed')
+      }
+      router.push('/admin-selection')
+    } catch {
+      alert('Invalid OTP')
+    }
   }
 
   const handleResendOTP = () => {
-    // Add OTP resend logic here
     console.log('Resending OTP')
   }
 
@@ -76,16 +126,16 @@ export function AdminLoginBox() {
           <form onSubmit={handleLogin}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <label htmlFor="username" className="text-sm font-medium text-gray-300">
+                <label htmlFor="userName" className="text-sm font-medium text-gray-300">
                   Username:
                 </label>
                 <Input 
-                  id="username" 
+                  id="userName" 
                   type="text" 
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
                   required 
                   placeholder="Enter your Username"
+                  value={data.userName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, userName: e.target.value })}
                   className="w-full bg-gray-700/90 border-gray-600 text-white focus:ring-yellow-400 focus:border-yellow-400 placeholder-white transition-all duration-300"
                 />
               </div>
@@ -96,10 +146,10 @@ export function AdminLoginBox() {
                 <Input 
                   id="password" 
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   required 
                   placeholder="Enter your Password"
+                  value={data.password}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, password: e.target.value })}
                   className="w-full bg-gray-700/90 border-gray-600 text-white focus:ring-yellow-400 focus:border-yellow-400 placeholder-white transition-all duration-300"
                 />
               </div>

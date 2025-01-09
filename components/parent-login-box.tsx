@@ -17,10 +17,10 @@ import {
 export function ParentLoginBox() {
   const router = useRouter()
 
-  const [data, setData] = React.useState({ username: '', password: '' });
+  const [data, setData] = React.useState({ userName: '', password: '' });
 
   const signinHandler = async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL}/auth/signin`, {
+    const response = await fetch(`http://68.178.203.99:7080/api/v1/auth/signin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -32,8 +32,10 @@ export function ParentLoginBox() {
     if (!response.ok) {
       throw new Error('Parent sign-in failed');
     }
-  
-    return response.json();
+    
+    const result = await response.json();
+    console.log(result);
+    return result;
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -42,7 +44,7 @@ export function ParentLoginBox() {
       await signinHandler();
       router.push('/student-selection');
     } catch {
-      alert('Login failed');
+      alert('Email or password not found');
     }
   }
 
@@ -61,16 +63,16 @@ export function ParentLoginBox() {
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="username" className="text-sm font-medium text-gray-300">
-                Username
+              <label htmlFor="userName" className="text-sm font-medium text-gray-300">
+                userName
               </label>
               <Input 
-                id="username" 
+                id="userName" 
                 type="text" 
                 required 
-                placeholder="Enter your Username"
-                value={data.username}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, username: e.target.value })}
+                placeholder="Enter your userName"
+                value={data.userName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, userName: e.target.value })}
                 className="w-full bg-gray-700/90 border-gray-600 text-white focus:ring-yellow-400 focus:border-yellow-400 transition-all duration-300"
               />
              
@@ -97,7 +99,6 @@ export function ParentLoginBox() {
           <CardFooter>
             <Button 
               type="submit"
-              onSubmit={signinHandler}
               className="w-full bg-yellow-400 text-black hover:bg-yellow-500 transition-all duration-300 transform hover:scale-105"
             >
               Login
